@@ -1,12 +1,20 @@
 from lcu_driver import Connector
+import json
 
 connector = Connector()
-#summoner = ''
+data = {}
+
+def returnJSON(csData):
+    return csData
+
 
 @connector.ready
 async def connect(connection):
     summoner = await connection.request('get', '/lol-champ-select/v1/session')
-    print(await summoner.json())
+    results = await summoner.json()
+    global data
+    data = results
+    #print(results)
 
     # res = summoner.json()
     # print(res)
@@ -18,4 +26,6 @@ async def disconnect(connection):
 
 connector.start()
 
-#print("OOGA BOOGA", summoner.json())
+print(data["myTeam"][1]["championId"])
+
+print(json.dumps(data, indent=4, sort_keys=True))
