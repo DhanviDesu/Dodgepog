@@ -1,12 +1,19 @@
 from lcu_driver import Connector
+from fastapi import APIRouter
 import json
 
 connector = Connector()
+router = APIRouter()
 data = {}
 
 def returnJSON(csData):
     return csData
 
+@router.get('/session')
+async def get_session():
+    connector.start()
+    session = await connector.connection.request('get', '/lol-champ-select/v1/session')
+    return(session)
 
 @connector.ready
 async def connect(connection):
@@ -24,8 +31,8 @@ async def connect(connection):
 async def disconnect(connection):
     print('Finished task')
 
-connector.start()
+#connector.start()
 
-print(data["myTeam"][1]["championId"])
+#print(data["myTeam"][1]["championId"])
 
-print(json.dumps(data, indent=4, sort_keys=True))
+#print(json.dumps(data, indent=4, sort_keys=True))

@@ -1,24 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState} from 'react';
+import Button from '@material-ui/core/Button'
 import './App.css';
-
+import {ROOT_URL} from './constants'
 function App() {
+  const [response, setResponse] = useState(null);
+  const ping = () => {
+    fetch(ROOT_URL,{
+      mode: 'cors'
+    })
+    .then(res => res.json())
+    .then(
+      data => {setResponse(JSON.stringify(data))}
+    )
+    .catch(() => {
+      setResponse('oops ur fucked');
+    })
+  }
+
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Button onClick={ping}>ping api endpoint</Button>
+      { response
+      ? <h1>{response}</h1>
+      : <div/>
+      }
     </div>
   );
 }
