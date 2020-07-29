@@ -1,19 +1,32 @@
-from lcu_driver import Connector
-from fastapi import APIRouter
 import json
+from typing import List, Optional
+
+from lcu_driver import Connector
+from psutil import Process, process_iter
+
+from fastapi import APIRouter
 
 connector = Connector()
 router = APIRouter()
 data = {}
 
-def returnJSON(csData):
-    return csData
+def returnJSON():
+    return data
 
 @router.get('/session')
 async def get_session():
-    connector.start()
-    session = await connector.connection.request('get', '/lol-champ-select/v1/session')
-    return(session)
+    def return_process(process_name: List[str]) -> Optional[Process]:
+        for process in process_iter():
+            if process.name() in process_name:
+                return process
+        return None
+
+    process = return_process(['LeagueClientUx.exe', 'LeagueClientUx'])
+    connector.create_connection(process)
+    await connector.connection.init()
+    global data
+    return data
+
 
 @connector.ready
 async def connect(connection):
@@ -21,18 +34,8 @@ async def connect(connection):
     results = await summoner.json()
     global data
     data = results
-    #print(results)
-
-    # res = summoner.json()
-    # print(res)
-
+    print(results)
 
 @connector.close
 async def disconnect(connection):
     print('Finished task')
-
-#connector.start()
-
-#print(data["myTeam"][1]["championId"])
-
-#print(json.dumps(data, indent=4, sort_keys=True))
