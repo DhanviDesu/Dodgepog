@@ -23,6 +23,7 @@ arr = data['data']
 
 mat = numpy.array(arr)
 
+
 numpy.random.shuffle(mat)
 
 endpoint = int(len(mat) * 0.9)
@@ -39,7 +40,7 @@ resultTest = test[:, 10]
 
 
 
-                            
+
 
 
 # In[56]:
@@ -72,7 +73,7 @@ print('Accuracy: %.2f' % (accuracy*100))
 
 
 # In[ ]:
-
+model.summary()
 
 
 
