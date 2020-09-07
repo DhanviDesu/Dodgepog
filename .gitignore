@@ -22,7 +22,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-/GettingRanks/all_data.json
-/GettingRanks/oneClean.json
-/GettingRanks/onegame.json
-/GettingRanks/sum_data.json
+/Data/all_data.json
+

@@ -1,27 +1,23 @@
 import numpy as np
 import pandas as pd
-
 import requests, time, datetime
 import json
 
 #get json
-f = open('all_data.json',) 
+f = open('allClean.json',) 
 data = json.load(f) 
-
 data = data['all_data']
-  
 f.close() 
 
+#store Ids
 names = []
 
-
-for i in range(100):
+n=9
+#get all summonerIds in order
+for i in range( len(data)//10*n, len(data)//10 * (n+1)):
+#for i in range(10):
     for plyr in data[i]['participantIdentities']:
         names.append(plyr['player']['summonerId'])
-
-# names = np.asarray(names)
-
-# names = names.reshape(-1,10)
 
 def getTierValue(tier):
     if(tier == "IRON"):
@@ -65,8 +61,7 @@ def RankToNum(sData):
         rank = sData[0]['rank']
         return getTierValue(tier) + getRankValue(rank)
     except Exception as e:
-        print(sData)
-        return np.nan
+        return -1
 
     
 
@@ -76,10 +71,21 @@ def RankToNum(sData):
 
 
 # Get data from all games
-apikey = "RGAPI-dde3fe34-cd63-40f7-a853-18905eff3e79"
-print(len(names))
-sums=[]
+apikey = "RGAPI-9ba20e2b-0578-4dbc-a63d-017d13134bc4"
 
+#make sure correct number of names obtained
+print(len(names))
+
+#to store ranks in a series0
+sums=[]
+#to store location it belongs in sums, 
+missed = []
+    #sumId
+    #indexInNames
+
+
+
+#sum number
 index = 0
 for sid in names:
     # for sid in i:
@@ -87,40 +93,44 @@ for sid in names:
         #gets data for game
         res = requests.get('https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/{}?api_key={}'.format(sid, apikey))
         sumData = res.json()
+
+        #make sure correct data
         if res.status_code == 200: 
-            sums.append( RankToNum(sumData) )
+            rank = RankToNum(sumData)
+            
+            #make sure valid rank is found
+            if rank != -1:
+                sums.append(rank)
+            #append -1, add index to missed list
+            #index will be same in sums and names, use to find actual data and replace
+            else:
+                print(names[index])
+                sums.append(rank)
+                missed.append(index)
+        
+        #placeholder np.nan
         else:
             print('ERROR message = {} Occured on sid={}, index={}'.format(sumData, sid, index))
-            sums.append(np.nan)
+            sums.append(-1)
+            missed.append(index)
+    #errors?
     except requests.exceptions.RequestException as e:  
         raise SystemExit(e)
+
+    #increment sum number
     index = index + 1
+
+    #time stuff
     if index%20 == 0: 
         time.sleep(1)
-    if index%100 == 0:
-        print('At {} we have {} matches'.format(datetime.datetime.now(), len(sums)))
-        time.sleep(120)   
+    if index%99 == 0:
+        print('At {} we have {} ranks'.format(datetime.datetime.now(), len(sums)))
+        print('Time Remaining: {}'.format( ((len(data)-len(sums))/99)*2 + ((len(data)-len(sums))/20)*(1/60)))
+        time.sleep(120)
     
-print('Done! # of ids: {}'.format(len(sums)))
+print('Done! # of ranks: {}'.format(len(sums)))
+print(missed)
 
-
-# for i in skipped_matchids:
-#     try:
-#         #gets data for game
-#         res = requests.get('https://na1.api.riotgames.com/lol/match/v4/matches/{}?api_key={}'.format(matchids[i], apikey))
-#         match = res.json()
-#         if res.status_code == 200: 
-#             matches.append(res.json())
-#         else:
-#             print('ERROR message = {} Occured on gameid={}, index={}'.format(res.json(), matchids[i], i))
-#             skipped_matchids.append(i)
-#     except requests.exceptions.RequestException as e:  
-#         raise SystemExit(e)
-#     if i%20 == 0: 
-#         time.sleep(1)
-#     if i%100 == 0:
-#         print('At {} we have {} matches'.format(datetime.datetime.now(), len(matches)))
-#         time.sleep(120) 
 
 sums = np.asarray(sums)
 sums = sums.reshape(-1,10)
@@ -128,7 +138,7 @@ sums = sums.reshape(-1,10)
 
 df = pd.DataFrame(data=sums, columns=['p1','p2','p3','p4','p5','p6', 'p7', 'p8', 'p9', 'p10'])
 
-df.to_csv('ranks.csv',index=False)
+df.to_csv('ranks{}.csv'.format(n+1),index=False)
 
 # data_json = {'all_sums':sums}
 
