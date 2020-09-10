@@ -1,6 +1,6 @@
 import requests, json, time, datetime
 
-f = open('all_data.json')
+f = open('../Data/all_data.json')
 data = json.load(f)
 
 game = data['all_data'][0] 
@@ -24,12 +24,16 @@ for game in data['all_data']:
     game.pop('gameDuration')
     game.pop('gameCreation')
 
+    game['team1Win'] = game['participants'][0]['stats']['win']
+
     for i in range(10):
         game['participants'][i]['lane'] = game['participants'][i]['timeline']['lane']
         game['participants'][i]['role'] = game['participants'][i]['timeline']['role']
 
         game['participants'][i].pop('participantId')
         game['participants'][i].pop('timeline')
+
+        
         game['participants'][i].pop('stats')
 
 with open('allClean.json', 'w') as outfile:
